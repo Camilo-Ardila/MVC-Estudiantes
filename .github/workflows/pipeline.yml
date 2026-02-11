@@ -1,0 +1,83 @@
+name: CI/CD Estudiantes MVC (Gradle)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Permisos gradlew
+        working-directory: ./demo
+        run: chmod +x ../gradlew
+
+      - name: Build + Tests
+        working-directory: ./demo
+        run: ../gradlew clean build --no-daemon --stacktrace
+
+  create-release:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout (con history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Permisos gradlew
+        working-directory: ./demo
+        run: chmod +x ../gradlew
+
+      - name: Obtener versión del proyecto
+        id: get-version
+        working-directory: ./demo
+        run: |
+          VERSION=$(../gradlew properties --console=plain -q | grep "^version:" | cut -d' ' -f2 | tr -d "'")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Versión detectada: $VERSION"
+
+      - name: Generar JAR ejecutable
+        working-directory: ./demo
+        run: ../gradlew bootJar --no-daemon
+
+      - name: Crear GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get-version.outputs.VERSION }}
+          name: Release v${{ steps.get-version.outputs.VERSION }}
+          body: |
+            (Cuerpo generado automáticamente por GitHub Actions)
+            
+            • Versión: ${{ steps.get-version.outputs.VERSION }}
+            • Commit: ${{ github.sha }}
+            • Versión JDK: 21
+            • Dependencias principales: Spring Boot WebMVC, Thymeleaf, JPA + H2
+          files: demo/build/libs/*.jar
+          generate_release_notes: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
