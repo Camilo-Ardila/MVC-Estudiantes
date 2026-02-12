@@ -54,17 +54,11 @@ Antes de ejecutar el proyecto debes tener instalado:
 
 ### 2. Entrar al directorio del proyecto
 
-    cd MVC-Estudiantes
+    cd MVC-Estudiantes/demo
 
 ### 3. Ejecutar la aplicación en el puerto 6001
 
-Linux / Mac:
-
     ./gradlew bootRun
-
-Windows:
-
-    gradlew.bat bootRun
 
 La aplicación quedará disponible en:
 

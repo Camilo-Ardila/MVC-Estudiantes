@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.devops.DB.EstudiantesDB;
@@ -49,5 +50,16 @@ public class EstudianteApiController {
         return ResponseEntity.ok(estudiante);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<ArrayList<Estudiante>> searchByNombre(@RequestParam String nombre) {
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ArrayList<Estudiante> resultados = EstudiantesDB.findByNombre(nombre);
+
+        return ResponseEntity.ok(resultados);
+    }
 
 }
