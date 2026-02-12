@@ -21,4 +21,13 @@ public class EstudiantesDB{
         return true;
     }
 
+    public static Estudiante findById(int id) {
+        for (Estudiante estudiante : Estudiantes) {
+            if (estudiante.getId() == id) {
+                return estudiante;
+            }
+        }
+        return null;
+    }
+
 }

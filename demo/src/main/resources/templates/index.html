@@ -11,6 +11,7 @@
         <div class="col-md-8">
             <h2 class="text-center mb-4">Gestor de Estudiantes</h2>
 
+            <!-- Formulario Crear -->
             <div class="card p-3 mb-3 shadow-sm">
                 <form id="studentForm" class="row g-2">
                     <div class="col-md-3">
@@ -29,13 +30,19 @@
                 <div id="alert" class="mt-2"></div>
             </div>
 
+            <!-- Barra Buscar + Listar -->
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h5>Estudiantes</h5>
-                <button id="listBtn" class="btn btn-outline-secondary btn-sm">Listar</button>
+                <div class="d-flex gap-2">
+                    <input id="searchId" type="number" class="form-control form-control-sm"
+                        placeholder="Buscar por ID">
+                    <button id="searchBtn" class="btn btn-outline-primary btn-sm">Buscar</button>
+                    <button id="listBtn" class="btn btn-outline-secondary btn-sm">Listar</button>
+                </div>
             </div>
 
-            <div id="studentsList" class="list-group">
-            </div>
+            <!-- Lista -->
+            <div id="studentsList" class="list-group"></div>
         </div>
     </div>
 
@@ -44,62 +51,96 @@
         const alertBox = document.getElementById('alert');
         const studentsList = document.getElementById('studentsList');
         const listBtn = document.getElementById('listBtn');
+        const searchBtn = document.getElementById('searchBtn');
 
-        function showAlert(message, type='success'){
+        function showAlert(message, type = 'success') {
             alertBox.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
-            setTimeout(()=> alertBox.innerHTML = '', 3000);
+            setTimeout(() => alertBox.innerHTML = '', 3000);
         }
 
-        async function createStudent(event){
+        async function createStudent(event) {
             event.preventDefault();
+
             const id = parseInt(document.getElementById('inputId').value, 10);
             const nombre = document.getElementById('inputNombre').value;
             const carrera = document.getElementById('inputCarrera').value;
 
             const body = { id, nombre, carrera };
 
-            try{
+            try {
                 const res = await fetch('/estudiantes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
 
-                if(res.status === 201){
+                if (res.status === 201) {
                     showAlert('Estudiante creado', 'success');
                     form.reset();
                     listStudents();
-                } else if (res.status === 409){
-                    showAlert('Id Inválido', 'warning');
+                } else if (res.status === 409) {
+                    showAlert('Id inválido o repetido', 'warning');
                 } else {
                     showAlert('Error al crear estudiante', 'danger');
                 }
-            } catch(err){
+            } catch (err) {
                 showAlert('Error de red', 'danger');
             }
         }
 
-        async function listStudents(){
-            try{
+        async function listStudents() {
+            try {
                 const res = await fetch('/estudiantes');
-                if(!res.ok){
+                if (!res.ok) {
                     showAlert('Error obteniendo lista', 'danger');
                     return;
                 }
                 const data = await res.json();
                 renderList(data);
-            } catch(err){
+            } catch (err) {
                 showAlert('Error de red', 'danger');
             }
         }
 
-        function renderList(arr){
-            studentsList.innerHTML = '';
-            if(!arr || arr.length === 0){
-                studentsList.innerHTML = '<div class="alert alert-secondary">No hay estudiantes</div>';
+        async function searchStudent() {
+            const id = document.getElementById('searchId').value;
+
+            if (!id) {
+                showAlert('Ingrese un ID para buscar', 'warning');
                 return;
             }
-            arr.forEach(s =>{
+
+            try {
+                const res = await fetch(`/estudiantes/${id}`);
+
+                if (res.status === 404) {
+                    showAlert('Estudiante no encontrado', 'warning');
+                    studentsList.innerHTML = '';
+                    return;
+                }
+
+                if (!res.ok) {
+                    showAlert('Error en la búsqueda', 'danger');
+                    return;
+                }
+
+                const data = await res.json();
+                renderList([data]);
+            } catch (err) {
+                showAlert('Error de red', 'danger');
+            }
+        }
+
+        function renderList(arr) {
+            studentsList.innerHTML = '';
+
+            if (!arr || arr.length === 0) {
+                studentsList.innerHTML =
+                    '<div class="alert alert-secondary">No hay estudiantes</div>';
+                return;
+            }
+
+            arr.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'list-group-item';
                 item.innerText = `ID: ${s.id} — ${s.nombre} (${s.carrera})`;
@@ -109,6 +150,7 @@
 
         form.addEventListener('submit', createStudent);
         listBtn.addEventListener('click', listStudents);
+        searchBtn.addEventListener('click', searchStudent);
 
         listStudents();
     </script>
