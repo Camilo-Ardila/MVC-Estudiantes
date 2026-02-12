@@ -21,7 +21,7 @@ jobs:
 
       - name: Permisos gradlew
         working-directory: ./demo
-        run: chmod +x ../gradlew
+        run: chmod +x gradlew
 
       - name: Build + Tests
         working-directory: ./demo
