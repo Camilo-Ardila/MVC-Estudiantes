@@ -2,13 +2,12 @@ name: CI/CD Estudiantes MVC (Gradle)
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,12 +69,12 @@ jobs:
           tag_name: v${{ steps.get-version.outputs.VERSION }}
           name: Release v${{ steps.get-version.outputs.VERSION }}
           body: |
-            (Cuerpo generado automáticamente por GitHub Actions)
+            Release generado automáticamente por GitHub Actions
             
             • Versión: ${{ steps.get-version.outputs.VERSION }}
             • Commit: ${{ github.sha }}
-            • Versión JDK: 21
-            • Dependencias principales: Spring Boot WebMVC, Thymeleaf, JPA + H2
+            • JDK: 21
+            • Stack: Spring Boot MVC + Thymeleaf + JPA
           files: demo/build/libs/*.jar
           generate_release_notes: true
           prerelease: false
