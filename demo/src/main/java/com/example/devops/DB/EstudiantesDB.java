@@ -30,4 +30,18 @@ public class EstudiantesDB{
         return null;
     }
 
+    public static ArrayList<Estudiante> findByNombre(String nombre) {
+
+        ArrayList<Estudiante> resultados = new ArrayList<>();
+
+        for (Estudiante estudiante : Estudiantes) {
+            if (estudiante.getNombre().toLowerCase().contains(nombre.toLowerCase())) {
+                resultados.add(estudiante);
+            }
+        }
+
+        return resultados;
+    }
+
+
 }
